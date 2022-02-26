@@ -1,18 +1,28 @@
-package main
+package concurrency
 
 import (
-	"bytes"
+	"reflect"
 	"testing"
 )
 
-func TestGreet(t *testing.T) {
-	buffer := bytes.Buffer{}
-	Greet(&buffer, "Chris")
+func fakeWebsiteChecker(url string) bool {
+	return url != "www.nosuchlink.shit"
+}
 
-	got := buffer.String()
-	want := "Hello, Chris"
+func TestWebsiteChecker(t *testing.T) {
+	urls := []string{
+		"www.google.com",
+		"www.facebook.com",
+		"www.nosuchlink.shit",
+	}
+	want := map[string]bool{
+		"www.google.com":      true,
+		"www.facebook.com":    true,
+		"www.nosuchlink.shit": false,
+	}
+	got := CheckWebsites(fakeWebsiteChecker, urls)
 
-	if got != want {
-		t.Errorf("want %q, got %q", want, got)
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("want %v, got %v", want, got)
 	}
 }
