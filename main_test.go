@@ -1,61 +1,36 @@
 package main
 
-import (
-	"fmt"
-	"testing"
-)
+import "testing"
 
-func TestHello(t *testing.T) {
-	assertCorrectMessage := func(t testing.TB, got, want string) {
-		t.Helper()
-		if got != want {
-			t.Errorf("got %q, want %q", got, want)
-		}
-	}
-	t.Run("saying hello to people", func(t *testing.T) {
-		got := Hello("Sanndy", "English")
-		want := "Hello, Sanndy"
-		assertCorrectMessage(t, got, want)
-	})
-	t.Run("saying empty words", func(t *testing.T) {
-		got := Hello("", "English")
-		want := "Hello, World"
-		assertCorrectMessage(t, got, want)
-	})
-	t.Run("in German", func(t *testing.T) {
-		got := Hello("Hans", "German")
-		want := "Hallo, Hans"
-		assertCorrectMessage(t, got, want)
-	})
-	t.Run("in German without name", func(t *testing.T) {
-		got := Hello("", "German")
-		want := "Hallo, Welt"
-		assertCorrectMessage(t, got, want)
-	})
-	t.Run("in Spanish", func(t *testing.T) {
-		got := Hello("Elodie", "Spanish")
-		want := "Hola, Elodie"
-		assertCorrectMessage(t, got, want)
-	})
-	t.Run("in Spanish without name", func(t *testing.T) {
-		got := Hello("", "Spanish")
-		want := "Hola, Tierra"
-		assertCorrectMessage(t, got, want)
-	})
-	t.Run("in Hindi", func(t *testing.T) {
-		got := Hello("Abhe", "Hindi")
-		want := "Hello, Abhe"
-		assertCorrectMessage(t, got, want)
-	})
-	t.Run("in Hindi without name", func(t *testing.T) {
-		got := Hello("", "Hindi")
-		want := "Hello, World"
-		assertCorrectMessage(t, got, want)
-	})
+type Test struct {
+	shape Shape
+	want  float64
 }
 
-func ExampleHello() {
-	greeting := Hello("Abhe", "English")
-	fmt.Print(greeting)
-	// Output: Hello, Abhe
+func TestPerimeter(t *testing.T) {
+	perimeterTests := []Test{
+		{Rectangle{10, 20}, 60},
+		{Square{20}, 80},
+		{Circle{50}, 314},
+	}
+	for _, test := range perimeterTests {
+		got := test.shape.Perimeter()
+		if got != test.want {
+			t.Errorf("want %0.2f, got %0.2f", test.want, got)
+		}
+	}
+}
+
+func TestArea(t *testing.T) {
+	perimeterTests := []Test{
+		{Rectangle{10, 20}, 200},
+		{Square{20}, 400},
+		{Circle{10}, 314},
+	}
+	for _, test := range perimeterTests {
+		got := test.shape.Area()
+		if got != test.want {
+			t.Errorf("want %0.2f, got %0.2f", test.want, got)
+		}
+	}
 }

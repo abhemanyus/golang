@@ -1,42 +1,44 @@
 package main
 
-import (
-	"fmt"
-)
+const PI = 3.14
 
-const english = "English"
-const german = "German"
-const spanish = "Spanish"
-const englishGreetingPrefix = "Hello, "
-const englishNamePlaceholder = "World"
-const germanGreetingPrefix = "Hallo, "
-const germanNamePlaceholder = "Welt"
-const spanishGreetingPrefix = "Hola, "
-const spanishNamePlaceholder = "Tierra"
-
-func greetingPrefix(language string) (greeting, placeholder string) {
-	switch language {
-	case english:
-		greeting, placeholder = englishGreetingPrefix, englishNamePlaceholder
-	case german:
-		greeting, placeholder = germanGreetingPrefix, germanNamePlaceholder
-	case spanish:
-		greeting, placeholder = spanishGreetingPrefix, spanishNamePlaceholder
-	default:
-		greeting, placeholder = englishGreetingPrefix, englishNamePlaceholder
-	}
-	return
+type Shape interface {
+	Area() float64
+	Perimeter() float64
 }
 
-func Hello(name, language string) string {
-	greeting, placeholder := greetingPrefix(language)
-
-	if name == "" {
-		return greeting + placeholder
-	}
-	return greeting + name
+type Rectangle struct {
+	width, height float64
 }
 
-func main() {
-	fmt.Println(Hello("Sanndy", "English"))
+type Square struct {
+	side float64
+}
+
+type Circle struct {
+	radius float64
+}
+
+func (rect Rectangle) Perimeter() float64 {
+	return 2 * (rect.width + rect.height)
+}
+
+func (sqr Square) Perimeter() float64 {
+	return 4 * sqr.side
+}
+
+func (circ Circle) Perimeter() float64 {
+	return 2 * PI * circ.radius
+}
+
+func (sqr Square) Area() float64 {
+	return sqr.side * sqr.side
+}
+
+func (rect Rectangle) Area() float64 {
+	return rect.height * rect.width
+}
+
+func (circ Circle) Area() float64 {
+	return PI * circ.radius * circ.radius
 }
