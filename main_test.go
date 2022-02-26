@@ -2,35 +2,50 @@ package main
 
 import "testing"
 
-type Test struct {
-	shape Shape
-	want  float64
-}
-
-func TestPerimeter(t *testing.T) {
-	perimeterTests := []Test{
-		{Rectangle{10, 20}, 60},
-		{Square{20}, 80},
-		{Circle{50}, 314},
-	}
-	for _, test := range perimeterTests {
-		got := test.shape.Perimeter()
-		if got != test.want {
-			t.Errorf("want %0.2f, got %0.2f", test.want, got)
+func TestWallet(t *testing.T) {
+	assertBalance := func(t testing.TB, want, got Bitcoin) {
+		t.Helper()
+		if got != want {
+			t.Errorf("want %s, got %s\n", want, got)
 		}
 	}
-}
 
-func TestArea(t *testing.T) {
-	perimeterTests := []Test{
-		{Rectangle{10, 20}, 200},
-		{Square{20}, 400},
-		{Circle{10}, 314},
-	}
-	for _, test := range perimeterTests {
-		got := test.shape.Area()
-		if got != test.want {
-			t.Errorf("want %0.2f, got %0.2f", test.want, got)
+	assertError := func(t testing.TB, got error, want string) {
+		t.Helper()
+		if got == nil {
+			t.Fatal("didn't get an error but wanted one")
+		}
+
+		if got.Error() != want {
+			t.Errorf("got %q, want %q", got, want)
 		}
 	}
+
+	t.Run("deposit", func(t *testing.T) {
+		wallet := Wallet{0}
+		wallet.Deposit(20)
+		got := wallet.Balance()
+		want := Bitcoin(20.0)
+		assertBalance(t, want, got)
+	})
+
+	t.Run("withdraw", func(t *testing.T) {
+		wallet := Wallet{20}
+		wallet.Withdraw(10)
+		got := wallet.Balance()
+		want := Bitcoin(10)
+		assertBalance(t, want, got)
+	})
+
+	t.Run("overdraw", func(t *testing.T) {
+		wallet := Wallet{10}
+		err := wallet.Withdraw(20)
+		want := Bitcoin(10)
+		got := wallet.Balance()
+
+		assertError(t, err, "cannot withdraw, insufficient funds")
+
+		assertBalance(t, want, got)
+	})
+
 }

@@ -1,44 +1,34 @@
 package main
 
-const PI = 3.14
+import (
+	"errors"
+	"fmt"
+)
 
-type Shape interface {
-	Area() float64
-	Perimeter() float64
+type Bitcoin float64
+
+func (btc Bitcoin) String() string {
+	return fmt.Sprintf("%g BTC", btc)
 }
 
-type Rectangle struct {
-	width, height float64
+type Wallet struct {
+	bal Bitcoin
 }
 
-type Square struct {
-	side float64
+func (w *Wallet) Deposit(amount Bitcoin) {
+	w.bal += amount
 }
 
-type Circle struct {
-	radius float64
+func (w *Wallet) Balance() Bitcoin {
+	return w.bal
 }
 
-func (rect Rectangle) Perimeter() float64 {
-	return 2 * (rect.width + rect.height)
-}
+var ErrInsufficientFunds = errors.New("cannot withdraw, insufficient funds")
 
-func (sqr Square) Perimeter() float64 {
-	return 4 * sqr.side
-}
-
-func (circ Circle) Perimeter() float64 {
-	return 2 * PI * circ.radius
-}
-
-func (sqr Square) Area() float64 {
-	return sqr.side * sqr.side
-}
-
-func (rect Rectangle) Area() float64 {
-	return rect.height * rect.width
-}
-
-func (circ Circle) Area() float64 {
-	return PI * circ.radius * circ.radius
+func (w *Wallet) Withdraw(amount Bitcoin) error {
+	if amount > w.bal {
+		return ErrInsufficientFunds
+	}
+	w.bal -= amount
+	return nil
 }
