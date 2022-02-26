@@ -1,34 +1,35 @@
 package main
 
-import (
-	"errors"
-	"fmt"
+const (
+	ErrKeyNotFound  = DictionaryErr("key not found")
+	ErrDuplicateKey = DictionaryErr("duplicate key entry")
 )
 
-type Bitcoin float64
+type DictionaryErr string
 
-func (btc Bitcoin) String() string {
-	return fmt.Sprintf("%g BTC", btc)
+func (err DictionaryErr) Error() string {
+	return string(err)
 }
 
-type Wallet struct {
-	bal Bitcoin
-}
+type Dictionary map[string]string
 
-func (w *Wallet) Deposit(amount Bitcoin) {
-	w.bal += amount
-}
-
-func (w *Wallet) Balance() Bitcoin {
-	return w.bal
-}
-
-var ErrInsufficientFunds = errors.New("cannot withdraw, insufficient funds")
-
-func (w *Wallet) Withdraw(amount Bitcoin) error {
-	if amount > w.bal {
-		return ErrInsufficientFunds
+func (d Dictionary) Search(key string) (string, error) {
+	value, ok := d[key]
+	if !ok {
+		return "", ErrKeyNotFound
 	}
-	w.bal -= amount
+	return value, nil
+}
+
+func (d Dictionary) Add(key, value string) error {
+	_, ok := d[key]
+	if ok {
+		return ErrDuplicateKey
+	}
+	d[key] = value
 	return nil
+}
+
+func (d Dictionary) Update(word, definition string) {
+	d[word] = definition
 }

@@ -1,51 +1,76 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
-func TestWallet(t *testing.T) {
-	assertBalance := func(t testing.TB, want, got Bitcoin) {
-		t.Helper()
-		if got != want {
-			t.Errorf("want %s, got %s\n", want, got)
-		}
+func assertString(t testing.TB, want, got string) {
+	t.Helper()
+	if got != want {
+		t.Errorf("want %q, got %q", want, got)
+	}
+}
+func assertError(t testing.TB, want, got error) {
+	t.Helper()
+	if got != want {
+		t.Errorf("want %q, got %q", want, got)
+	}
+}
+
+func TestSearch(t *testing.T) {
+	t.Run("known word", func(t *testing.T) {
+		myMap := Dictionary{"test": "this is just a test"}
+		got, _ := myMap.Search("test")
+		want := "this is just a test"
+
+		assertString(t, want, got)
+	})
+	t.Run("unknown word", func(t *testing.T) {
+		myMap := Dictionary{"test": "this is just a test"}
+		_, err := myMap.Search("unknown")
+
+		assertError(t, ErrKeyNotFound, err)
+	})
+}
+
+func assertDefinition(t testing.TB, m Dictionary, key, value string) {
+	t.Helper()
+	got, err := m.Search(key)
+
+	if err != nil {
+		t.Fatal("should find added word: ", key)
 	}
 
-	assertError := func(t testing.TB, got error, want string) {
-		t.Helper()
-		if got == nil {
-			t.Fatal("didn't get an error but wanted one")
-		}
-
-		if got.Error() != want {
-			t.Errorf("got %q, want %q", got, want)
-		}
+	if got != value {
+		t.Errorf("want %q, got %q, given %q", value, got, key)
 	}
+}
 
-	t.Run("deposit", func(t *testing.T) {
-		wallet := Wallet{0}
-		wallet.Deposit(20)
-		got := wallet.Balance()
-		want := Bitcoin(20.0)
-		assertBalance(t, want, got)
+func TestAdd(t *testing.T) {
+	t.Run("add new", func(t *testing.T) {
+		myMap := Dictionary{"test": "this is just a test"}
+		key, value := "cat", "this is a cat"
+		err := myMap.Add(key, value)
+		assertError(t, nil, err)
+		assertDefinition(t, myMap, key, value)
 	})
 
-	t.Run("withdraw", func(t *testing.T) {
-		wallet := Wallet{20}
-		wallet.Withdraw(10)
-		got := wallet.Balance()
-		want := Bitcoin(10)
-		assertBalance(t, want, got)
+	t.Run("add existing", func(t *testing.T) {
+		key, value := "test", "this is just a test"
+		myMap := Dictionary{"test": value}
+		err := myMap.Add(key, "this is a cat")
+		assertError(t, ErrDuplicateKey, err)
+		assertDefinition(t, myMap, key, value)
 	})
+}
 
-	t.Run("overdraw", func(t *testing.T) {
-		wallet := Wallet{10}
-		err := wallet.Withdraw(20)
-		want := Bitcoin(10)
-		got := wallet.Balance()
+func TestUpdate(t *testing.T) {
+	word := "test"
+	definition := "this is just a test"
+	dictionary := Dictionary{word: definition}
+	newDefinition := "new definition"
 
-		assertError(t, err, "cannot withdraw, insufficient funds")
+	dictionary.Update(word, newDefinition)
 
-		assertBalance(t, want, got)
-	})
-
+	assertDefinition(t, dictionary, word, newDefinition)
 }
