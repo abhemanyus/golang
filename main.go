@@ -1,27 +1,33 @@
-package concurrency
+package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
-	"time"
 )
 
-func Racer(urlA, urlB string, timeout time.Duration) (string, error) {
-	select {
-	case <-ping(urlA):
-		return urlA, nil
-	case <-ping(urlB):
-		return urlB, nil
-	case <-time.After(timeout):
-		return "", fmt.Errorf("timed out waiting for %q and %q", urlA, urlB)
-	}
+type Store interface {
+	Fetch(ctx context.Context) (string, error)
+	Cancel()
 }
 
-func ping(url string) chan struct{} {
-	ch := make(chan struct{})
-	go func() {
-		http.Get(url)
-		close(ch)
-	}()
-	return ch
+func Server(store Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		data := make(chan string, 1)
+		go func() {
+			d, err := store.Fetch(ctx)
+			if err != nil {
+				fmt.Printf("got error from Fetch %q", err)
+			}
+			data <- d
+		}()
+		select {
+		case d := <-data:
+			fmt.Fprint(w, d)
+		case <-ctx.Done():
+			store.Cancel()
+			return
+		}
+	}
 }
