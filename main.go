@@ -1,22 +1,27 @@
 package concurrency
 
-type WebsiteChecker func(url string) bool
-type result struct {
-	string
-	bool
+import (
+	"fmt"
+	"net/http"
+	"time"
+)
+
+func Racer(urlA, urlB string, timeout time.Duration) (string, error) {
+	select {
+	case <-ping(urlA):
+		return urlA, nil
+	case <-ping(urlB):
+		return urlB, nil
+	case <-time.After(timeout):
+		return "", fmt.Errorf("timed out waiting for %q and %q", urlA, urlB)
+	}
 }
 
-func CheckWebsites(wc WebsiteChecker, urls []string) map[string]bool {
-	results := make(map[string]bool)
-	resultChannel := make(chan result)
-	for _, url := range urls {
-		go func(u string) {
-			resultChannel <- result{u, wc(u)}
-		}(url)
-	}
-	for i := 0; i < len(urls); i++ {
-		r := <-resultChannel
-		results[r.string] = r.bool
-	}
-	return results
+func ping(url string) chan struct{} {
+	ch := make(chan struct{})
+	go func() {
+		http.Get(url)
+		close(ch)
+	}()
+	return ch
 }
