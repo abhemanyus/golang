@@ -1,3 +1,3 @@
-module github.com/abhemanyus/blogposts
+module example.com/httpserver
 
 go 1.17
